@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architectural Layout Pipeline</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      background: #1a1d2e;
+      border-bottom: 1px solid #2d3148;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    header h1 { font-size: 1rem; font-weight: 700; color: #a5b4fc; white-space: nowrap; }
+
+    #btn-start {
+      padding: 7px 20px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    #btn-start:hover:not(:disabled) { background: #4338ca; }
+    #btn-start:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+
+    .phase-badges { display: flex; gap: 8px; flex-wrap: nowrap; }
+    .badge {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      background: #1e2235;
+      color: #64748b;
+      border: 1px solid #2d3148;
+      white-space: nowrap;
+    }
+    .badge.running { background: #1e3a5f; color: #60a5fa; border-color: #3b82f6; }
+    .badge.success { background: #14532d; color: #4ade80; border-color: #16a34a; }
+    .badge.error   { background: #450a0a; color: #f87171; border-color: #dc2626; }
+    .badge.waiting { background: #3b2f00; color: #fbbf24; border-color: #d97706; }
+
+    #header-status {
+      margin-left: auto;
+      font-size: 0.78rem;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    /* ── 3-column body ───────────────────────────────────── */
+    .body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* ── LEFT: Constraints ───────────────────────────────── */
+    .col-left {
+      width: 270px;
+      flex-shrink: 0;
+      border-right: 1px solid #2d3148;
+      background: #13162a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .col-left .col-header {
+      padding: 10px 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #818cf8;
+      border-bottom: 1px solid #2d3148;
+      flex-shrink: 0;
+    }
+    #constraints-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card {
+      background: #1a1d2e;
+      border: 1px solid #2d3148;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .card h3 {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #818cf8;
+      margin-bottom: 8px;
+    }
+    .kv-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 3px 0;
+      border-bottom: 1px solid #1e2235;
+      font-size: 0.75rem;
+      gap: 6px;
+    }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-key { color: #94a3b8; flex-shrink: 0; }
+    .kv-val { color: #e2e8f0; font-weight: 500; text-align: right; }
+    .kv-val.hi { color: #4ade80; }
+
+    .size-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 0;
+      font-size: 0.73rem;
+    }
+    .size-bar .lbl { color: #94a3b8; width: 50px; flex-shrink: 0; }
+    .size-bar .bar-bg {
+      flex: 1;
+      height: 5px;
+      background: #1e2235;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .size-bar .bar-fill { height: 100%; background: #4f46e5; border-radius: 3px; }
+    .size-bar .pct { color: #818cf8; font-weight: 600; width: 28px; text-align: right; font-size: 0.7rem; }
+
+    .pts-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 8px;
+      font-size: 0.71rem;
+      font-family: monospace;
+    }
+    .pts-grid .pt  { color: #64748b; }
+    .pts-grid .pv  { color: #cbd5e1; }
+
+    /* ── CENTER: DXF Preview ─────────────────────────────── */
+    .col-center {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: #0a0c15;
+      overflow: hidden;
+    }
+    .col-center .col-header {
+      padding: 8px 16px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #818cf8;
+      border-bottom: 1px solid #2d3148;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #13162a;
+      flex-shrink: 0;
+    }
+    .col-center .col-header button {
+      padding: 3px 12px;
+      background: #1e2235;
+      color: #94a3b8;
+      border: 1px solid #2d3148;
+      border-radius: 4px;
+      font-size: 0.73rem;
+      cursor: pointer;
+    }
+    .col-center .col-header button:hover { background: #2d3148; color: #e2e8f0; }
+    #preview-status { color: #475569; font-size: 0.72rem; margin-left: auto; }
+
+    #preview-container {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    #preview-placeholder {
+      text-align: center;
+      color: #2d3148;
+    }
+    #preview-placeholder .icon { font-size: 4rem; margin-bottom: 12px; }
+    #preview-placeholder p { font-size: 0.85rem; }
+    #preview-img {
+      display: none;
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 6px;
+      border: 1px solid #2d3148;
+      box-shadow: 0 4px 24px rgba(0,0,0,.6);
+    }
+
+    /* ── RIGHT: Log + Feedback ───────────────────────────── */
+    .col-right {
+      width: 340px;
+      flex-shrink: 0;
+      border-left: 1px solid #2d3148;
+      background: #13162a;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .col-right .col-header {
+      padding: 10px 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #818cf8;
+      border-bottom: 1px solid #2d3148;
+      flex-shrink: 0;
+    }
+
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.73rem;
+      line-height: 1.55;
+      background: #0a0c15;
+      white-space: pre-wrap;
+      word-break: break-all;
+      min-height: 0;
+    }
+    #log .ok    { color: #4ade80; }
+    #log .fail  { color: #f87171; }
+    #log .warn  { color: #fbbf24; }
+    #log .head  { color: #818cf8; font-weight: 700; }
+    #log .muted { color: #2d3148; }
+    #log .info  { color: #64748b; }
+
+    /* ── Feedback form ───────────────────────────────────── */
+    #feedback-section {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      background: #1a1d2e;
+      border-top: 1px solid #2d3148;
+      flex-shrink: 0;
+    }
+    #feedback-section.visible { display: flex; }
+    #feedback-section label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    #feedback-section label span {
+      color: #fbbf24;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+    #feedback-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 5px;
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      resize: none;
+      height: 60px;
+      font-family: inherit;
+    }
+    #feedback-input:focus { outline: none; border-color: #4f46e5; }
+    .fb-buttons { display: flex; gap: 8px; }
+    .fb-buttons button {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    #btn-apply  { background: #4f46e5; color: #fff; flex: 1; }
+    #btn-apply:hover  { background: #4338ca; }
+    #btn-finish { background: #1e2235; color: #94a3b8; border: 1px solid #2d3148; }
+    #btn-finish:hover { background: #2d3148; color: #e2e8f0; }
+    #btn-apply:disabled, #btn-finish:disabled { opacity: .45; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<!-- ══ Header ══════════════════════════════════════════════ -->
+<header>
+  <h1>Architectural Layout Pipeline</h1>
+  <button id="btn-start" onclick="startPipeline()">▶ Start Pipeline</button>
+  <div class="phase-badges">
+    <span class="badge" id="badge-p1">Phase 1</span>
+    <span class="badge" id="badge-p2">Phase 2</span>
+    <span class="badge" id="badge-p3">Phase 3</span>
+  </div>
+  <span id="header-status">Idle</span>
+</header>
+
+<!-- ══ Body ════════════════════════════════════════════════ -->
+<div class="body">
+
+  <!-- LEFT: Constraints -->
+  <div class="col-left">
+    <div class="col-header">Input Constraints</div>
+    <div id="constraints-content">
+      <div style="color:#475569;font-size:0.78rem;padding:20px 8px;text-align:center">
+        Loading…
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: DXF Preview -->
+  <div class="col-center">
+    <div class="col-header">
+      DXF Preview
+      <button onclick="refreshPreview()">↻ Refresh</button>
+      <span id="preview-status">No layout yet</span>
+    </div>
+    <div id="preview-container">
+      <div id="preview-placeholder">
+        <div class="icon">🏗</div>
+        <p>Run the pipeline to generate a layout</p>
+      </div>
+      <img id="preview-img" alt="Layout preview" />
+    </div>
+  </div>
+
+  <!-- RIGHT: Log + Feedback -->
+  <div class="col-right">
+    <div class="col-header">Pipeline Output</div>
+    <div id="log"></div>
+
+    <!-- Phase 3 feedback form — hidden until Phase 2 succeeds -->
+    <div id="feedback-section">
+      <label>Design Feedback <span>Phase 3</span></label>
+      <textarea id="feedback-input"
+                placeholder="e.g. make bedroom 3 bigger, shrink the kitchen…"></textarea>
+      <div class="fb-buttons">
+        <button id="btn-apply"  onclick="applyFeedback()">Apply</button>
+        <button id="btn-finish" onclick="finishFeedback()">Finish</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ Script ═══════════════════════════════════════════════ -->
+<script>
+// ── Badge helpers ────────────────────────────────────────────
+function setBadge(id, cls, label) {
+  const el = document.getElementById(id);
+  el.className = 'badge ' + (cls || '');
+  el.textContent = label;
+}
+
+// ── Log helpers ──────────────────────────────────────────────
+const logEl = document.getElementById('log');
+
+function appendLog(text, cls) {
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = text + '\n';
+  logEl.appendChild(span);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function classifyLine(line) {
+  if (/^\[OK\]/.test(line))    return 'ok';
+  if (/^\[FAIL\]/.test(line))  return 'fail';
+  if (/^\[WARN\]/.test(line))  return 'warn';
+  if (/^\[ERROR\]/.test(line)) return 'fail';
+  if (/^===/.test(line))       return 'head';
+  if (/^---/.test(line))       return 'muted';
+  return 'info';
+}
+
+// ── Preview ──────────────────────────────────────────────────
+function refreshPreview() {
+  const img = document.getElementById('preview-img');
+  const ph  = document.getElementById('preview-placeholder');
+  const st  = document.getElementById('preview-status');
+  st.textContent = 'Loading…';
+
+  const ts = Date.now();
+  img.onload = () => {
+    img.style.display = 'block';
+    ph.style.display  = 'none';
+    st.textContent = 'Updated ' + new Date().toLocaleTimeString();
+  };
+  img.onerror = () => { st.textContent = 'Preview unavailable'; };
+  img.src = '/api/preview?t=' + ts;
+}
+
+function loadSitePreview() {
+  const img = document.getElementById('preview-img');
+  const ph  = document.getElementById('preview-placeholder');
+  const st  = document.getElementById('preview-status');
+  st.textContent = 'Loading site plot…';
+
+  // Always show site boundary only on page load — never show a stale prior run
+  img.onload = () => {
+    img.style.display = 'block';
+    ph.style.display  = 'none';
+    st.textContent = 'Site plot (input)';
+  };
+  img.onerror = () => { st.textContent = 'Preview unavailable'; };
+  img.src = '/api/preview/site?t=' + Date.now();
+}
+
+// ── Pipeline ─────────────────────────────────────────────────
+let sse = null;
+
+function startPipeline() {
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('feedback-section').classList.remove('visible');
+  setFeedbackBusy(false);
+  logEl.innerHTML = '';
+  setBadge('badge-p1', 'running', 'Phase 1 ⟳');
+  setBadge('badge-p2', '', 'Phase 2');
+  setBadge('badge-p3', '', 'Phase 3');
+  document.getElementById('header-status').textContent = 'Running…';
+
+  fetch('/api/start', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.error) { appendLog('[ERROR] ' + d.error, 'fail'); return; }
+      openSSE();
+    })
+    .catch(e => appendLog('[ERROR] ' + e, 'fail'));
+}
+
+function openSSE() {
+  if (sse) { sse.close(); sse = null; }
+  sse = new EventSource('/api/stream');
+
+  sse.onmessage = e => {
+    const line = e.data;
+    if (line === '__HEARTBEAT__') return;
+    appendLog(line, classifyLine(line));
+  };
+
+  sse.addEventListener('sentinel', e => handleSentinel(e.data));
+
+  sse.onerror = () => {
+    appendLog('[Connection lost]', 'warn');
+    sse.close();
+  };
+}
+
+function handleSentinel(token) {
+  switch (token) {
+    case 'PHASE1_START':
+      setBadge('badge-p1', 'running', 'Phase 1 ⟳');
+      break;
+    case 'PHASE1_DONE':
+      setBadge('badge-p1', 'success', 'Phase 1 ✓');
+      setBadge('badge-p2', 'running', 'Phase 2 ⟳');
+      refreshPreview();
+      break;
+    case 'PHASE2_START':
+      setBadge('badge-p2', 'running', 'Phase 2 ⟳');
+      break;
+    case 'PHASE2_DONE':
+      setBadge('badge-p2', 'success', 'Phase 2 ✓');
+      setBadge('badge-p3', 'waiting', 'Phase 3 ⏳');
+      break;
+    case 'PHASE3_READY':
+      document.getElementById('feedback-section').classList.add('visible');
+      setFeedbackBusy(false);
+      document.getElementById('feedback-input').focus();
+      refreshPreview();
+      break;
+    case 'UPDATED':
+      refreshPreview();
+      break;
+    case 'DONE':
+      setBadge('badge-p3', 'success', 'Phase 3 ✓');
+      document.getElementById('header-status').textContent = 'Done';
+      document.getElementById('btn-start').disabled = false;
+      document.getElementById('feedback-section').classList.remove('visible');
+      if (sse) { sse.close(); sse = null; }
+      break;
+    case 'ERROR':
+      document.getElementById('header-status').textContent = 'Error — check log';
+      document.getElementById('btn-start').disabled = false;
+      document.getElementById('feedback-section').classList.remove('visible');
+      if (sse) { sse.close(); sse = null; }
+      break;
+  }
+}
+
+// ── Feedback ─────────────────────────────────────────────────
+function setFeedbackBusy(busy) {
+  document.getElementById('btn-apply').disabled         = busy;
+  document.getElementById('btn-finish').disabled        = busy;
+  document.getElementById('feedback-input').disabled    = busy;
+}
+
+function applyFeedback() {
+  const fb = document.getElementById('feedback-input').value.trim();
+  if (!fb) { alert('Please enter some feedback first.'); return; }
+  setFeedbackBusy(true);
+  fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feedback: fb }),
+  })
+  .then(r => r.json())
+  .then(() => {
+    document.getElementById('feedback-input').value = '';
+    setFeedbackBusy(false);
+  })
+  .catch(e => { appendLog('[ERROR] ' + e, 'fail'); setFeedbackBusy(false); });
+}
+
+function finishFeedback() {
+  setFeedbackBusy(true);
+  fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ feedback: '' }),
+  }).catch(() => {});
+}
+
+// ── Constraints (load on page open) ──────────────────────────
+function kv(key, val, hi) {
+  return `<div class="kv-row">
+    <span class="kv-key">${key}</span>
+    <span class="kv-val${hi ? ' hi' : ''}">${val}</span>
+  </div>`;
+}
+
+function loadConstraints() {
+  fetch('/api/constraints')
+    .then(r => r.json())
+    .then(renderConstraints)
+    .catch(() => {
+      document.getElementById('constraints-content').innerHTML =
+        '<div style="color:#f87171;font-size:0.75rem;padding:12px">Failed to load input.json</div>';
+    });
+}
+
+function renderConstraints(data) {
+  const el = document.getElementById('constraints-content');
+  const c  = data.constraints || [];
+  const find = id => (c.find(x => x.id === id) || {});
+  const ac   = data.allocation_config || {};
+  const sr   = ac.size_category_area_ratios || {};
+  const rd   = ac.room_type_max_depths || {};
+  const tree = (data.protected_objects || [])[0];
+  const pts  = ((data.site || {}).boundary || {}).points || [];
+  const maxArea = find('C5').value || 4650;
+
+  let html = '';
+
+  // Project
+  html += `<div class="card"><h3>Project</h3>
+    ${kv('Name',  data.project_name || '—')}
+    ${kv('Units', data.units || 'feet')}
+  </div>`;
+
+  // Setbacks
+  html += `<div class="card"><h3>Setbacks &amp; Limits</h3>
+    ${kv('Front',       (find('C1').value ?? 7) + ' ft')}
+    ${kv('Rear',        (find('C2').value ?? 7) + ' ft')}
+    ${kv('Left',        (find('C3').value ?? 5) + ' ft')}
+    ${kv('Right',       (find('C4').value ?? 5) + ' ft')}
+    ${kv('Max footprint', maxArea + ' sq ft', true)}
+  </div>`;
+
+  // Protected tree
+  if (tree) {
+    const gc = tree.geometry || {};
+    const pr = tree.protection_rules || {};
+    html += `<div class="card"><h3>Protected Tree</h3>
+      ${kv('Center', '(' + (gc.center || []).join(', ') + ')')}
+      ${kv('Trunk r', (gc.radius || '—') + ' ft')}
+      ${kv('Exclusion r', (pr.total_exclusion_radius || '—') + ' ft', true)}
+    </div>`;
+  }
+
+  // Size ratios
+  const ratioRows = Object.entries(sr).map(([k, v]) => {
+    const pct = Math.round(v * 100);
+    return `<div class="size-bar">
+      <span class="lbl">${k}</span>
+      <div class="bar-bg"><div class="bar-fill" style="width:${Math.min(pct * 2.5, 100)}%"></div></div>
+      <span class="pct">${pct}%</span>
+    </div>`;
+  }).join('');
+  if (ratioRows) {
+    html += `<div class="card"><h3>Room Size Ratios</h3>${ratioRows}</div>`;
+  }
+
+  // Room depths
+  const depthRows = Object.entries(rd).map(([k, v]) => kv(k, v + ' ft')).join('');
+  if (depthRows) {
+    html += `<div class="card"><h3>Max Room Depths</h3>${depthRows}</div>`;
+  }
+
+  // Allocation settings
+  html += `<div class="card"><h3>Allocation</h3>
+    ${kv('Margin', (ac.margin ?? 1) + ' ft')}
+    ${kv('Corridor w', ac.corridor_width_ratio ?? '—')}
+    ${kv('Sequence', (ac.allocation_sequence || []).slice(0, 4).join(' → ') + '…')}
+  </div>`;
+
+  // Site boundary
+  if (pts.length) {
+    const ptRows = pts.map((p, i) =>
+      `<span class="pt">P${i+1}</span><span class="pv">(${p[0]}, ${p[1]})</span>`
+    ).join('');
+    html += `<div class="card"><h3>Site Boundary (${pts.length} pts)</h3>
+      <div class="pts-grid">${ptRows}</div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+// Load constraints and site preview immediately on page load
+loadConstraints();
+loadSitePreview();
+</script>
+</body>
+</html>

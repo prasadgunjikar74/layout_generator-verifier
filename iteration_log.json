@@ -1,0 +1,200 @@
+[
+  {
+    "phase": "outer",
+    "iteration": 1,
+    "status": "OUTER_VALID",
+    "violations": [],
+    "timestamp": "2026-06-12 22:44:26"
+  },
+  {
+    "phase": "inner",
+    "iteration": 1,
+    "status": "INNER_INVALID",
+    "violations": [
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Entrance' overlaps with 'Corridor'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bedroom 2'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Kitchen'"
+      },
+      {
+        "constraint_id": "IC1",
+        "type": "room_adjacency",
+        "message": "'Entrance' and 'Living Room' must be adjacent but share no wall"
+      },
+      {
+        "constraint_id": "IC2",
+        "type": "room_adjacency",
+        "message": "'Living Room' and 'Dining Area' must be adjacent but share no wall"
+      },
+      {
+        "constraint_id": "IC9",
+        "type": "room_adjacency",
+        "message": "'Corridor' and 'Bedroom 3' must be adjacent but share no wall"
+      },
+      {
+        "constraint_id": "IC10",
+        "type": "corridor_connectivity",
+        "message": "'Bedroom 3' is not directly accessible from 'Corridor'"
+      }
+    ],
+    "timestamp": "2026-06-12 22:45:00"
+  },
+  {
+    "phase": "inner",
+    "iteration": 2,
+    "status": "INNER_INVALID",
+    "violations": [
+      {
+        "constraint_id": "INNER_C1",
+        "type": "room_outside_building",
+        "message": "Room 'Corridor' extends outside building boundary"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Living Room' overlaps with 'Corridor'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Living Room' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bedroom 1'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bedroom 2'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bedroom 3'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bathroom (Bedroom 1)'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Corridor' overlaps with 'Bathroom (Bedroom 3)'"
+      },
+      {
+        "constraint_id": "IC1",
+        "type": "room_adjacency",
+        "message": "Room 'Entrance' not found in allocated rooms"
+      },
+      {
+        "constraint_id": "IC10",
+        "type": "corridor_connectivity",
+        "message": "Entry room 'Entrance' not found in layout"
+      }
+    ],
+    "timestamp": "2026-06-12 22:45:34"
+  },
+  {
+    "phase": "inner",
+    "iteration": 3,
+    "status": "INNER_INVALID",
+    "violations": [
+      {
+        "constraint_id": "INNER_C1",
+        "type": "room_outside_building",
+        "message": "Room 'Dining Area' extends outside building boundary"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Entrance' overlaps with 'Bedroom 3'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Entrance' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Living Room' overlaps with 'Bedroom 3'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Living Room' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Bedroom 2' overlaps with 'Bedroom 3'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Bedroom 2' overlaps with 'Dining Area'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Bedroom 3' overlaps with 'Bathroom (Bedroom 3)'"
+      },
+      {
+        "constraint_id": "INNER_C4",
+        "type": "room_overlap",
+        "message": "Room 'Dining Area' overlaps with 'Bathroom (Bedroom 2)'"
+      },
+      {
+        "constraint_id": "IC4",
+        "type": "room_adjacency",
+        "message": "Room 'Kitchen' not found in allocated rooms"
+      },
+      {
+        "constraint_id": "IC5",
+        "type": "room_adjacency",
+        "message": "Room 'Kitchen' not found in allocated rooms"
+      },
+      {
+        "constraint_id": "IC8",
+        "type": "room_adjacency",
+        "message": "'Corridor' and 'Bedroom 2' must be adjacent but share no wall"
+      },
+      {
+        "constraint_id": "IC10",
+        "type": "corridor_connectivity",
+        "message": "'Bedroom 2' is not directly accessible from 'Corridor'"
+      }
+    ],
+    "timestamp": "2026-06-12 22:46:24"
+  },
+  {
+    "phase": "inner",
+    "iteration": 4,
+    "status": "INNER_VALID",
+    "violations": [],
+    "timestamp": "2026-06-12 22:46:54"
+  }
+]

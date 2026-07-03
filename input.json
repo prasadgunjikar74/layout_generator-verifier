@@ -1,0 +1,242 @@
+{
+  "project_name": "Seattle_Residential_Generation",
+
+  "units": "feet",
+
+  "coordinate_system": {
+    "origin": "bottom-left outer corner",
+    "origin_coordinate": [0, 0],
+    "x_direction": "east",
+    "y_direction": "north"
+  },
+
+  "site": {
+    "boundary": {
+      "type": "polygon",
+
+      "points": [
+        [0,8],
+        [0,84],
+        [75,84],
+        [75,88],
+        [80,88],
+        [80,8],
+        [75,8],
+        [75,0],
+        [35,0],
+        [35,8]
+      ]
+    }
+  },
+
+  "protected_objects": [
+    {
+      "id": "tree_1",
+
+      "type": "protected_tree",
+
+      "geometry": {
+        "type": "circle",
+
+        "center": [77.5, 86],
+
+        "radius": 1
+      },
+
+      "protection_rules": {
+        "buffer_distance": 1,
+
+        "total_exclusion_radius": 4
+      }
+    }
+  ],
+
+  "constraints": [
+    {
+      "id": "C1",
+
+      "type": "front_setback",
+
+      "value": 7,
+
+      "unit": "feet"
+    },
+
+    {
+      "id": "C2",
+
+      "type": "rear_setback",
+
+      "value": 7,
+
+      "unit": "feet"
+    },
+
+    {
+      "id": "C3",
+
+      "type": "side_setback_left",
+
+      "value": 5,
+
+      "unit": "feet"
+    },
+
+    {
+      "id": "C4",
+
+      "type": "side_setback_right",
+
+      "value": 5,
+
+      "unit": "feet"
+    },
+
+    
+    {
+      "id": "C5",
+
+      "type": "max_building_footprint",
+
+      "value": 4650,
+
+      "unit": "square_feet"
+    },
+
+    {
+      "id": "C6",
+
+      "type": "inside_site_boundary",
+
+      "value": true
+    },
+
+    {
+      "id": "C7",
+
+      "type": "avoid_tree_exclusion_zone",
+
+      "value": true
+    }
+  ],
+
+  "generation_objective": {
+    "type": "maximize_buildable_area",
+
+    "optimization_priority": [
+      "maximize_area",
+      "respect_setbacks",
+      "avoid_tree_zone"
+    ],
+
+    "maximize_footprint_area": true,
+
+    "ignore_room_adjacency_constraints": true,
+
+    "allow_any_room_layout": true
+  },
+
+  "allocation_config": {
+    "size_category_area_ratios": {
+      "small": 0.12,
+      "medium": 0.20,
+      "large": 0.30
+    },
+    "room_type_max_depth": {
+      "circulation": 6.0,
+      "living": 12.0,
+      "dining": 10.0,
+      "kitchen": 10.0,
+      "bedroom": 14.0
+    },
+    "corridor_width_ratio": 0.05,
+    "min_room_depth_ratio": 0.1,
+    "margin": 1.0,
+    "entrance_depth_ratio": 0.11,
+    "entrance_width_ratio": 0.13,
+    "allocation_sequence": [
+      "Entrance",
+      "Living Room",
+      "Dining Area",
+      "Kitchen",
+      "Bedroom 1",
+      "Bedroom 2",
+      "Bedroom 3"
+    ],
+    "exclude_rooms": ["Entrance"]
+  },
+
+  "inner_constraints": [
+
+    {
+      "id": "IC1",
+      "type": "room_adjacency",
+      "room_a": "Entrance",
+      "room_b": "Living Room"
+    },
+
+    {
+      "id": "IC2",
+      "type": "room_adjacency",
+      "room_a": "Living Room",
+      "room_b": "Dining Area"
+    },
+
+    {
+      "id": "IC3",
+      "type": "room_adjacency",
+      "room_a": "Living Room",
+      "room_b": "Corridor"
+    },
+
+    {
+      "id": "IC4",
+      "type": "room_adjacency",
+      "room_a": "Dining Area",
+      "room_b": "Kitchen"
+    },
+
+    {
+      "id": "IC5",
+      "type": "room_adjacency",
+      "room_a": "Kitchen",
+      "room_b": "Corridor"
+    },
+
+    {
+      "id": "IC7",
+      "type": "room_adjacency",
+      "room_a": "Corridor",
+      "room_b": "Bedroom 1"
+    },
+
+    {
+      "id": "IC8",
+      "type": "room_adjacency",
+      "room_a": "Corridor",
+      "room_b": "Bedroom 2"
+    },
+
+    {
+      "id": "IC9",
+      "type": "room_adjacency",
+      "room_a": "Corridor",
+      "room_b": "Bedroom 3"
+    },
+
+    {
+      "id": "IC10",
+      "type": "corridor_connectivity",
+      "entry_room": "Entrance",
+      "corridor_room": "Corridor",
+      "private_rooms": ["Bedroom 1", "Bedroom 2", "Bedroom 3"]
+    }
+
+  ],
+
+  "generated_building_outline": {
+    "type": "polygon",
+
+    "points": []
+  }
+}

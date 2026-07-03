@@ -1,0 +1,114 @@
+{
+  "rooms": [
+    {
+      "name": "Entrance",
+      "type": "circulation",
+      "size_category": "small",
+      "privacy": "public",
+      "preferred_location": "south-east",
+      "adjacent_to": [
+        "Living Room"
+      ],
+      "windows_required": false,
+      "doors_required": true
+    },
+    {
+      "name": "Living Room",
+      "type": "living",
+      "size_category": "large",
+      "privacy": "public",
+      "preferred_location": "south",
+      "adjacent_to": [
+        "Entrance",
+        "Dining Area",
+        "Corridor"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    },
+    {
+      "name": "Corridor",
+      "type": "circulation",
+      "size_category": "small",
+      "privacy": "semi-private",
+      "preferred_location": "central",
+      "adjacent_to": [
+        "Living Room",
+        "Kitchen",
+        "Bedroom 1",
+        "Bedroom 2",
+        "Bedroom 3"
+      ],
+      "windows_required": false,
+      "doors_required": true
+    },
+    {
+      "name": "Bedroom 1",
+      "type": "bedroom",
+      "size_category": "large",
+      "privacy": "private",
+      "preferred_location": "north-west",
+      "interior_features": [
+        "Ensuite Bathroom"
+      ],
+      "adjacent_to": [
+        "Corridor"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    },
+    {
+      "name": "Bedroom 2",
+      "type": "bedroom",
+      "size_category": "medium",
+      "privacy": "private",
+      "preferred_location": "north-east",
+      "interior_features": [
+        "Ensuite Bathroom"
+      ],
+      "adjacent_to": [
+        "Corridor"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    },
+    {
+      "name": "Bedroom 3",
+      "type": "bedroom",
+      "size_category": "small",
+      "privacy": "private",
+      "preferred_location": "central-south-west",
+      "adjacent_to": [
+        "Corridor"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    },
+    {
+      "name": "Dining Area",
+      "type": "dining",
+      "size_category": "medium",
+      "privacy": "public",
+      "preferred_location": "central-south-east",
+      "adjacent_to": [
+        "Living Room",
+        "Kitchen"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    },
+    {
+      "name": "Kitchen",
+      "type": "kitchen",
+      "size_category": "medium",
+      "privacy": "public",
+      "preferred_location": "central-east",
+      "adjacent_to": [
+        "Dining Area",
+        "Corridor"
+      ],
+      "windows_required": true,
+      "doors_required": true
+    }
+  ]
+}
